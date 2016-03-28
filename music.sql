@@ -1,0 +1,17 @@
+CREATE TABLE audio_files(
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    path TEXT UNIQUE NOT NULL,
+);
+
+CREATE TABLE tracks(
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    files TEXT NOT NULL,
+    begin TEXT,
+    end TEXT,
+);
+
+CREATE TABLE playlists(
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    tracks TEXT NOT NULL,
+    random TEXT,
+);
