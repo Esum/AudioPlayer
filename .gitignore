@@ -29,6 +29,7 @@ var/
 *.egg
 python35.zip
 pyvenv.cfg
+.idea/
 
 # PyInstaller
 #  Usually these files are written by a python script from a template

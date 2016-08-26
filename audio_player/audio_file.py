@@ -10,6 +10,23 @@ def get_tag_value(tagList, tag: str, valueType=str):
 
 
 class audio_file:
+    """
+    An audio file identified by its path
+    
+    Properties are:
+        title: the title of the track
+        album: the title of the album
+        album_artist: the artist of the album
+        composer: the composer of the track
+        artist: the artist performing the track
+        date: the date of the track
+        genre: the genre of the track
+        disc: the number of the disc of the track
+        totaldiscs: the number of disc of the album
+        track: the number of the track in the disc
+        totaltracks: the number of track in the disc
+    """
+    
     def __init__(self, path: str, formt: str=''):
         self.path = path
         if formt == '':
