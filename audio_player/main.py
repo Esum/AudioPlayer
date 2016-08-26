@@ -1,5 +1,5 @@
 import sqlite3 as sql
-from audio_file import audio_file, audio_files
+from audio_file import AudioFile, audio_files
 from track import track, tracks
 
 
@@ -9,7 +9,7 @@ def init_musics(db=r"..\music.db"):
     for tupl in cursor.execute("SELECT * FROM audio_files"):
         identifier, path, formt = tupl
         identifier = int(identifier)
-        audio_files[identifier] = audio_file(path, formt)
+        audio_files[identifier] = AudioFile(path, formt)
     for tupl in cursor.execute("SELECT * FROM tracks"):
         identifier, files, begin, end = tupl
         identifier = int(identifier)

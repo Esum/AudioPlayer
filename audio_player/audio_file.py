@@ -9,7 +9,7 @@ def get_tag_value(tagList, tag: str, valueType=str):
     return None
 
 
-class audio_file:
+class AudioFile:
     """
     An audio file identified by its path
     
