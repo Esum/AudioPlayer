@@ -1,6 +1,6 @@
 import sqlite3 as sql
-from audio_file import AudioFile, audio_files
-from track import track, tracks
+from .audio_file import AudioFile, audio_files
+from .track import track, tracks
 
 
 def init_musics(db=r"..\music.db"):
