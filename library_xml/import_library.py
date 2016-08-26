@@ -80,7 +80,7 @@ def audio_file_to_xml(file: mutagen.FileType) -> str:
 
 
 def library_to_xml(path: str) -> str:
-    files = [os.path.join(root, name).replace("\\", "/") for root, dirs, files in os.walk(path) for name in files][:10]
+    files = [os.path.join(root, name).replace("\\", "/") for root, dirs, files in os.walk(path) for name in files]
 
     tracks_XML = list()
 
