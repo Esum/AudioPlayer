@@ -1,1 +1,1 @@
-from fmod.fmod import *
+from fmod.fmod import TimeUnit, DebugFlags, InitFlags, Sound, Channel
