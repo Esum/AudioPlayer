@@ -174,11 +174,11 @@ class Tags(dict):
     Todo:
         - add MP4 support
         - add id3 tags formatting
-        - handle discnumber id3 tag nonsense
+        - handle discnumber id3 tag nonsense -> discnumber/totaldiscs and tracknumber/totaltracks done \o/
 
     """
 
-    RE_MP3_DISCNUMBER_DISCTOTAL = re.compile(r"(?P<discnumber>[1-9]+[0-9]*)/(?P<disctotal>[1-9]+[0-9]*)")
+    RE_ID3_NUMBER_TOTAL = re.compile(r"(?P<number>[1-9]+[0-9]*)/(?P<total>[1-9]+[0-9]*)")
 
     def __init__(self, file: mutagen.FileType):
         super().__init__()
@@ -205,11 +205,25 @@ class Tags(dict):
 
             # discnumber / disctotal
             discnumber_tag_value = self["discnumber"][0].text[0]
-            discnumber_regex_result = Tags.RE_MP3_DISCNUMBER_DISCTOTAL.match(discnumber_tag_value)
+            discnumber_regex_result = Tags.RE_ID3_NUMBER_TOTAL.match(discnumber_tag_value)
 
             if discnumber_regex_result:
-                self["discnumber"] = [discnumber_regex_result.group("discnumber")]
-                self["disctotal"] = [discnumber_regex_result.group("disctotal")]
+                self["discnumber"] = [discnumber_regex_result.group("number")]
+                self["totaldiscs"] = [discnumber_regex_result.group("total")]
+            else:
+                # TODO add log message
+                self.pop("discnumber")
+
+            # tracknumber / tracktotal
+            track_number_tag_value = self["tracknumber"][0].text[0]
+            track_number_regex_result = Tags.RE_ID3_NUMBER_TOTAL.match(track_number_tag_value)
+
+            if track_number_regex_result:
+                self["tracknumber"] = [track_number_regex_result.group("number")]
+                self["totaltracks"] = [track_number_regex_result.group("total")]
+            else:
+                # TODO add log message
+                self.pop("tracknumber")
 
             for key in tags_conversion[formt]:
                 self[key] = list(map(str, self[key]))
