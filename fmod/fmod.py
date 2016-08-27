@@ -163,6 +163,11 @@ class Sound:
             sound = c_voidp()
         self._sound = sound
     
+    def get_loop_count(self):
+        loopcount = c_int()
+        FMOD.FMOD_Sound_GetNumSubSounds(self._sound, loopcount)
+        return loopcount.value
+    
     def get_num_subsounds(self):
         num_subsounds = c_int()
         FMOD.FMOD_Sound_GetNumSubSounds(self._sound, num_subsounds)
@@ -172,6 +177,9 @@ class Sound:
         subsound = c_voidp()
         FMOD.FMOD_Sound_GetSubSound(self._sound, numsubsound, byref(subsound))
         return Sound(subsound)
+    
+    def set_loop_count(self, loopcount: int):
+        FMOD.FMOD_Sound_SetLoopCount(self._sound, loopcount)
     
     def release(self):
         FMOD.FMOD_Sound_Release(self._sound)
