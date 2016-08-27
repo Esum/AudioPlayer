@@ -1,5 +1,6 @@
 import os
 import os.path
+import time
 
 import xml.sax.saxutils
 import xml.dom.minidom
@@ -13,98 +14,118 @@ import jinja2
 
 from library_xml.constants import tags_conversion
 
-with open(os.path.join(os.path.dirname(__file__), "./templates/track.xml")) as file:
-    TEMPLATE_XML_TRACK = jinja2.Template(file.read())
-
-with open(os.path.join(os.path.dirname(__file__), "./templates/library.xml")) as file:
-    TEMPLATE_XML_LIBRARY = jinja2.Template(file.read())
-
 
 # TODO add documentation
 
-def audio_file_to_tags_dict(file: mutagen.FileType) -> dict:
-    if isinstance(file.tags, mutagen.flac.VCFLACDict):
-        formt = "flac"
-        get_tags = lambda key: list(set(filter(lambda e: e, sum([file.tags.get(converted, []) for converted in tags_conversion[formt][key]], []))))
-        # this lambda is useful because some tags can have 2 different field names, it reads both values and then join the two lists of tags obtained
-        tags = {key: get_tags(key) for key in tags_conversion[formt]}
+class Track:
+    with open(os.path.join(os.path.dirname(__file__), "./templates/track.xml")) as file:
+        XML_TEMPLATE = jinja2.Template(file.read())
 
-        return tags
+    def __init__(self, path: str):
+        file = mutagen.File(path)
 
+        self.path = path
+        self.last_modification = os.path.getmtime(path)
+        self.info = Info(file)
+        self.tags = Tags(file)
 
-    elif isinstance(file.tags, mutagen.id3.ID3Tags):
-        formt = "mp3"
-        get_tags = lambda key: list(filter(lambda e: e, sum([[file.tags.get(converted, None)] for converted in tags_conversion[formt][key] if file.tags.get(converted, None) is not None], [])))
-        # this lambda is useful because some tags can have 2 different field names, it reads both values and then join the two lists of tags obtained
-
-        tags = {key: get_tags(key) for key in tags_conversion[formt]}
-
-        # TODO handle tags formatting for some tags
-
-        tags = {key: list(map(str, tags[key])) for key in tags}
-
-        return tags
-    else:
-        # TODO add MP4
-        raise NotImplementedError
+    def to_xml(self) -> str:
+        path = xml.sax.saxutils.escape(self.path)
+        last_modification = xml.sax.saxutils.escape(str(self.last_modification))
+        return Track.XML_TEMPLATE.render(path=path, last_modification=last_modification, tags_xml=self.tags.to_xml(), info_xml=self.info.to_xml())
 
 
-def audio_file_to_info_dict(file: mutagen.FileType) -> dict:
-    info = dict()
+class Info(dict):
+    def __init__(self, file: mutagen.FileType):
+        super().__init__()
 
-    info["path"] = os.path.abspath(file.filename.replace("\\", "/"))
-    info["last_modification_time"] = os.path.getmtime(file.filename)
-
-    # FLAC
-    if isinstance(file.info, mutagen.flac.StreamInfo):
-        info["codec"] = "FLAC"
-        info["bitrate"] = file.info.bits_per_sample * file.info.sample_rate
-        info["channels"] = file.info.channels
-        info["sample_rate"] = file.info.sample_rate
-        info["bits_per_sample"] = file.info.bits_per_sample
-        info["length"] = file.info.length
+        # FLAC
+        if isinstance(file.info, mutagen.flac.StreamInfo):
+            self["codec"] = "FLAC"
+            self["bitrate"] = file.info.bits_per_sample * file.info.sample_rate
+            self["channels"] = file.info.channels
+            self["sample_rate"] = file.info.sample_rate
+            self["bits_per_sample"] = file.info.bits_per_sample
+            self["length"] = file.info.length
 
 
-    # MP3
-    elif isinstance(file.info, mutagen.mp3.MPEGInfo):
-        info["codec"] = "MP3"
-        info["bitrate"] = file.info.bitrate
-        info["bitrate_mode"] = str(file.info.bitrate_mode)
-        info["channels"] = file.info.channels
-        info["sample_rate"] = file.info.sample_rate
-        info["length"] = file.info.length
+        # MP3
+        elif isinstance(file.info, mutagen.mp3.MPEGInfo):
+            self["codec"] = "MP3"
+            self["bitrate"] = file.info.bitrate
+            self["bitrate_mode"] = str(file.info.bitrate_mode)
+            self["channels"] = file.info.channels
+            self["sample_rate"] = file.info.sample_rate
+            self["length"] = file.info.length
 
-    # TODO add MP4
-
-    return info
-
-
-def audio_file_to_xml(file: mutagen.FileType) -> str:
-    tags = audio_file_to_tags_dict(file)
-    tags = {key: "; ".join(tags[key]) for key in tags}
-
-    info = audio_file_to_info_dict(file)
-    path = xml.sax.saxutils.escape(info.pop("path"))
-    last_modification = xml.sax.saxutils.escape(str(info.pop("last_modification_time")))
-
-    tags_xml = "".join("<{key}>{value}</{key}>".format(key=key, value=xml.sax.saxutils.escape(tags[key])) for key in sorted(tags) if tags[key])
-    info_xml = "".join("<{key}>{value}</{key}>".format(key=key, value=xml.sax.saxutils.escape(str(info[key]))) for key in sorted(info) if info[key])
-
-    return TEMPLATE_XML_TRACK.render(path=path, last_modification=last_modification, tags_xml=tags_xml, info_xml=info_xml)
+    def to_xml(self) -> str:
+        return "".join("<{key}>{value}</{key}>".format(key=key, value=xml.sax.saxutils.escape(str(self[key]))) for key in sorted(self) if self[key])
 
 
-def library_to_xml(path: str) -> str:
-    files = [os.path.join(root, name).replace("\\", "/") for root, dirs, files in os.walk(path) for name in files]
+class Tags(dict):
+    def __init__(self, file: mutagen.FileType):
+        super().__init__()
 
-    tracks_XML = list()
+        # FLAC
+        if isinstance(file.tags, mutagen.flac.VCFLACDict):
+            formt = "flac"
+            get_tags = lambda key: list(set(filter(lambda e: e, sum([file.tags.get(converted, []) for converted in tags_conversion[formt][key]], []))))
+            # this lambda is useful because some tags can have 2 different field names, it reads both values and then join the two lists of tags obtained
 
-    for file in files:
-        try:
-            tracks_XML.append(audio_file_to_xml(mutagen.File(file)))
-        except:
-            # TODO add log message
-            pass
+            for key in tags_conversion[formt]:
+                self[key] = get_tags(key)
 
-    rendered = TEMPLATE_XML_LIBRARY.render(path=path, tracks=tracks_XML)
+        # MP3
+        elif isinstance(file.tags, mutagen.id3.ID3Tags):
+            formt = "mp3"
+            get_tags = lambda key: list(filter(lambda e: e, sum([[file.tags.get(converted, None)] for converted in tags_conversion[formt][key] if file.tags.get(converted, None) is not None], [])))
+            # this lambda is useful because some tags can have 2 different field names, it reads both values and then join the two lists of tags obtained
 
-    return xml.dom.minidom.parseString(rendered).toprettyxml()
+            for key in tags_conversion[formt]:
+                self[key] = get_tags(key)
+
+            # TODO handle tags formatting for some tags
+
+            for key in tags_conversion[formt]:
+                self[key] = list(map(str, self[key]))
+
+        else:
+            # TODO add MP4
+            raise NotImplementedError
+
+    def to_xml(self) -> str:
+        tags = {key: "; ".join(self[key]) for key in self}
+        return "".join("<{key}>{value}</{key}>".format(key=key, value=xml.sax.saxutils.escape(tags[key])) for key in sorted(tags) if tags[key])
+
+
+class Library(list):
+    with open(os.path.join(os.path.dirname(__file__), "./templates/library.xml")) as file:
+        XML_TEMPLATE = jinja2.Template(file.read())
+
+    def __init__(self, path):
+        super().__init__()
+        self.path = path
+        self.initialize()
+
+    def initialize(self):
+        super().__init__()
+        paths = [os.path.join(root, name).replace("\\", "/") for root, dirs, files in os.walk(self.path) for name in files]
+
+        for path in paths:
+            try:
+                self.append(Track(path))
+            except:
+                # TODO add log message
+                pass
+
+    def to_xml(self) -> str:
+        tracks_XML = list()
+
+        for track in self:
+            tracks_XML.append(track.to_xml())
+
+        path = xml.sax.saxutils.escape(self.path)
+        export_time = xml.sax.saxutils.escape(repr(time.time()))
+
+        rendered = Library.XML_TEMPLATE.render(path=path, export_time=export_time, tracks=tracks_XML)
+        return xml.dom.minidom.parseString(rendered).toprettyxml()
