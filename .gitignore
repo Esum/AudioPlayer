@@ -69,3 +69,12 @@ target/
 
 # Pycharm
 .idea/
+
+# Music files
+.flac
+.mp3
+.m4a
+.mp4
+
+# DLLs
+.dll
