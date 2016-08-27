@@ -6,6 +6,7 @@ import xml.dom.minidom
 
 import mutagen
 import mutagen.mp3
+import mutagen.id3
 import mutagen.flac
 
 import jinja2
@@ -24,11 +25,16 @@ def audio_file_to_tags_dict(file: mutagen.FileType) -> dict:
     tags = dict()
 
     if isinstance(file.tags, mutagen.flac.VCFLACDict):
-        get_tags = lambda key: list(set(filter(lambda e: e, sum([file.tags.get(converted, []) for converted in tags_conversion["flac"][key]], []))))
-        # this lambda is useful because the totaltracks and totaldiscs tags can have 2 different field names, it reads both values and then join the two lists of tags obtained
-        tags = {key: get_tags(key) for key in tags_conversion["flac"]}
-
-    # TODO add MP3, MP4
+        formt = "flac"
+    elif isinstance(file.tags, mutagen.id3.ID3Tags)
+        formt = "mp3"
+    else:
+        # TODO add MP4
+        raise NotImplementedError
+    
+    get_tags = lambda key: list(set(filter(lambda e: e, sum([file.tags.get(converted, []) for converted in tags_conversion[formt][key]], []))))
+    # this lambda is useful because some tags can have 2 different field names, it reads both values and then join the two lists of tags obtained
+    tags = {key: get_tags(key) for key in tags_conversion[formt]}
 
     return tags
 
