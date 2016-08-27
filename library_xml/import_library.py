@@ -43,6 +43,21 @@ class Track:
 
     def __repr__(self):
         return 'Track("{}")'.format(self.path)
+
+    def has_file_changed(self) -> bool:
+        """Compares the last modification timestamp of the file with self.last_modification to determine if the file has changed since its import
+
+        Returns:
+            bool: file changed ?
+
+        """
+        return os.path.getmtime(self.path) != self.last_modification
+
+    def refresh(self) -> None:
+        """Checks the file has been modified since import and re-import it if it has"""
+        if self.has_file_changed():
+            self.__init__(self.path)
+
     def to_xml(self) -> str:
         """Serializes the informations to a xml formatted string
 
@@ -247,14 +262,81 @@ class Library(list):
 
         """
         super().__init__()
-        paths = [os.path.join(root, name).replace("\\", "/") for root, dirs, files in os.walk(self.path) for name in files]
+        paths = [os.path.abspath(os.path.join(root, name)) for root, dirs, files in os.walk(self.path) for name in files]
 
         for path in paths:
             try:
                 self.append(Track(path))
+            except Exception:
+                # TODO add log message
+                print(path)
+                pass
+
+    def clean_deleted_files(self) -> None:
+        """Deletes tracks which have a path doesn't point to a file
+
+        Todo:
+            - add log message
+
+        """
+        super().__init__(list(filter(lambda track: os.path.isfile(track.path), self)))
+
+    def refresh_tracked_files(self) -> None:
+        """Refreshes all the tracked music files using Track.refresh
+
+        If the refresh of a track fails, the track is deleted from the library.
+
+        Todo:
+            - add log message
+
+        """
+        failed = list()
+        for track in self:
+            try:
+                track.refresh()
+            except:
+                # TODO add log message
+                failed.append(track)
+
+        for track in failed:
+            self.remove(track)
+
+    def import_untracked_files(self) -> None:
+        """Looks for untracked files located in self.path and its subfolders and adds then to the library
+
+        Untracked music files that failed to be imported are ignored.
+
+        Todo:
+            - add log message
+
+        """
+        tracked_paths = {track.path for track in self}
+        all_paths = {os.path.abspath(os.path.join(root, name)) for root, dirs, files in os.walk(self.path) for name in files}
+
+        for path in all_paths.difference(tracked_paths):
+            try:
+                # TODO add log message
+                self.append(Track(path))
             except:
                 # TODO add log message
                 pass
+
+    def refresh(self) -> None:
+        """Refreshes the library
+
+        Refresh the library =
+            + clean_deleted_files
+            + refresh_tracked_files
+            + import_untracked_files
+
+        Todo:
+            - add log message
+
+        """
+        # TODO add log message
+        self.clean_deleted_files()
+        self.refresh_tracked_files()
+        self.import_untracked_files()
 
     def to_xml(self) -> str:
         """Serializes the library to a xml formatted string
