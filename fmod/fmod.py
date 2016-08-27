@@ -208,11 +208,24 @@ class Channel:
         return paused.value
 
     def get_position(self, postype) -> int:
+        """
+        Args:
+            Time unit to retrieve into the position parameter. See TimeUnit.
+
+        Returns:
+            The current playback position for the specified channel.
+        """
         position = c_uint()
         FMOD.FMOD_Channel_GetPosition(self._channel, byref(position), postype)
         return position.value
     
     def is_playing(self) -> bool:
+        """Retrieves the playing state.
+
+        Returns:
+            True if the channel of the interface is currently playing a sound, False otherwise.
+        
+        """
         playing = c_bool()
         FMOD.FMOD_Channel_IsPlaying(self._channel, byref(playing))
         return playing.value

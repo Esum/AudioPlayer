@@ -32,9 +32,22 @@ class PlayAudio:
         self.system.play_sound(self.sound, channel=self.channel)
     
     def get_position(self, time_unit: TimeUnit=TimeUnit.ms):
+        """
+        Args:
+            time_unit (ms): The time unit used for the position.
+
+        Returns:
+            The current playback position for the specified channel.
+        """
         return self.channel.get_position(time_unit)
     
-    def is_playing(self):
+    def is_playing(self) -> bool:
+        """Retrieves the playing state.
+
+        Returns:
+            True if the channel of the interface is currently playing a sound, False otherwise.
+        
+        """
         return self.channel.is_playing()
     
     def set_paused(self, paused: bool):
