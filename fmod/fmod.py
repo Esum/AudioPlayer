@@ -163,6 +163,12 @@ class Sound:
         self._sound = sound
     
     def get_loop_count(self):
+        """Retrieves the current loop count value for the specified sound.
+        
+        Remarks
+            Unlike the channel loop count function, this function simply returns the value set with Sound::setLoopCount. It does not decrement as it plays (especially seeing as one sound can be played multiple times).
+        
+        """
         loopcount = c_int()
         FMOD.FMOD_Sound_GetNumSubSounds(self._sound, loopcount)
         return loopcount.value
@@ -177,10 +183,24 @@ class Sound:
         FMOD.FMOD_Sound_GetSubSound(self._sound, numsubsound, byref(subsound))
         return Sound(subsound)
     
-    def set_loop_count(self, loopcount: int):
+    def set_loop_count(self, loopcount: int=-1):
+        """Sets a sound, by default, to loop a specified number of times before stopping if its mode is set to FMOD_LOOP_NORMAL or FMOD_LOOP_BIDI.
+
+        Args:
+            loopcount (-1): Number of times to loop before stopping. 0 = oneshot. 1 = loop once then stop. -1 = loop forever.
+        
+        """
         FMOD.FMOD_Sound_SetLoopCount(self._sound, loopcount)
     
     def release(self):
+        """Frees a sound object.
+
+        Remarks
+            This will free the sound object and everything created under it.
+            If this is a stream that is playing as a subsound of another parent stream, then if this is the currently playing subsound, the whole stream will stop.
+            Note - This function will block if it was opened with Mode.nonblocking and hasn't finished opening yet.
+        
+        """
         FMOD.FMOD_Sound_Release(self._sound)
 
 
@@ -279,6 +299,7 @@ class System:
             When the priority of sounds change or emulated sounds get louder than audible ones, they will swap the actual voice resource over and play the voice from its correct position in time as it should be heard.
             What this means is you can play all 1000 sounds, if they are scattered around the game world, and as you move around the world you will hear the closest or most important 32, and they will automatically swap in and out as you move.
             Currently the maximum channel limit is 4093.
+        
         """
         self._system = c_voidp()
         FMOD.FMOD_System_Create(byref(self._system))
