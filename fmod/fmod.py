@@ -1,9 +1,22 @@
 from ctypes import *
 from threading import Thread
 import time
+from enum import IntEnum
 VERSION = 0x00010810
 
 FMOD = WinDLL("fmodL")
+
+
+class TimeUnit:
+    ms = 0x00000001
+    pcm = 0x00000002
+    pcmbytes = 0x00000004
+    rawbytes = 0x00000008
+    pcmfraction = 0x00000010
+    modorder = 0x00000100
+    modrow = 0x00000200
+    modpattern = 0x00000400
+    buffered = 0x10000000
 
 
 class SystemUpdateThread(Thread):
@@ -17,6 +30,9 @@ class SystemUpdateThread(Thread):
         for _ in range(0, 100):
             FMOD.FMOD_System_Update(self.system)
             time.sleep(0.05)
+    
+    def set_position(self, position: int, time_unit: TimeUnit=TimeUnit.ms):
+        FMOD.FMOD_Channel_SetPosition(self.channel, position, time_unit.value)
 
 
 class FMOD_System:
