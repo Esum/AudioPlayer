@@ -191,11 +191,16 @@ class Channel:
         self._channel = channel
     
     def get_paused(self):
+    def get_loop_count(self) -> int:
+        loopcount = c_int()
+        FMOD.FMOD_Channel_GetLoopCount(self._channel, byref(loopcount))
+        return loopcount.value
+    
         paused = c_bool()
         FMOD.FMOD_Channel_GetPaused(self._channel, byref(paused))
         return paused.value
 
-    def get_position(self, postype):
+    def get_position(self, postype) -> int:
         position = c_uint()
         FMOD.FMOD_Channel_GetPosition(self._channel, byref(position), postype)
         return position.value
