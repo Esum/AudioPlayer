@@ -1,8 +1,7 @@
 from ctypes import *
-import time
-from enum import IntEnum
-VERSION = 0x00010810
 
+
+VERSION = 0x00010810
 FMOD = WinDLL("fmodL")
 
 
