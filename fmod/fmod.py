@@ -102,8 +102,14 @@ class Channel:
             channel = c_voidp()
         self._channel = channel
     
-    def set_position(self, position: int, time_unit):
-        FMOD.FMOD_Channel_SetPosition(self._channel, position, time_unit)
+    def set_loop_count(self, loopcount: int=-1):
+        FMOD.FMOD_Channel_SetLoopCount(self._channel, loopcount)
+    
+    def set_loop_points(self, loopstart: int, loopstarttype, loopend: int, loopendtype):
+        FMOD.FMOD_Channel_SetLoopPoints(self._channel, loopstart, loopstarttype, loopend, loopendtype)
+    
+    def set_position(self, position: int, postype):
+        FMOD.FMOD_Channel_SetPosition(self._channel, position, postype)
     
     def set_volume(self, volume: float=1.0):
         FMOD.FMOD_Channel_SetVolume(self._channel, c_float(volume))
@@ -133,6 +139,9 @@ class System:
             FMOD.FMOD_System_PlaySound(self._system, sound._sound, channelgroup._channelgroup, paused, 0)
         else:
             FMOD.FMOD_System_PlaySound(self._system, sound._sound, channelgroup._channelgroup, paused, byref(channel._channel))
+    
+    def release(self):
+        FMOD.FMOD_System_Release(self._system)
     
     def update(self):
         FMOD.FMOD_System_Update(self._system)

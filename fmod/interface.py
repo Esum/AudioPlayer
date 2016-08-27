@@ -16,8 +16,11 @@ class PlayAudio:
     def set_position(self, position: int, time_unit: TimeUnit=TimeUnit.ms):
         self.channel.set_position(position, time_unit)
     
-    def stop(self):
-        self.channel.stop()
+    def set_repeat(self, repeat: bool=True):
+        self.channel.set_loop_count(-1 if repeat else 0)
     
     def set_volume(self, volume: float=1.0):
         self.channel.set_volume(volume)
+        
+    def stop(self):
+        self.channel.stop()
