@@ -11,7 +11,7 @@ import mutagen.flac
 
 import jinja2
 
-from .constants import tags_conversion
+from library_xml.constants import tags_conversion
 
 with open(os.path.join(os.path.dirname(__file__), "./templates/track.xml")) as file:
     TEMPLATE_XML_TRACK = jinja2.Template(file.read())
