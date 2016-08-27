@@ -36,6 +36,9 @@ class SystemUpdateThread(Thread):
     
     def stop(self):
         FMOD.FMOD_Channel_Stop(self.channel)
+    
+    def set_volume(self, volume: float):
+        FMOD.FMOD_Channel_SetVolume(self.channel, c_float(volume))
 
 
 class FMOD_System:
