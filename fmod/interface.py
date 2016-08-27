@@ -10,7 +10,7 @@ class PlayAudio:
     def play_sound(self, path: str):
         sound = self.system.create_stream(path)
         if sound.get_num_subsounds():
-            sound = souns.get_subsound(0)
+            sound = sound.get_subsound(0)
         self.system.play_sound(sound, channel=self.channel)
     
     def set_position(self, position: int, time_unit: TimeUnit=TimeUnit.ms):
