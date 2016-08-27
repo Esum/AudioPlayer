@@ -43,10 +43,39 @@ class PlayAudio:
         FMOD.FMOD_System_PlaySound(self.system, sound, 0, 0, byref(self.channel)) 
     
     def set_position(self, position: int, time_unit: TimeUnit=TimeUnit.ms):
+        """Sets the playback position for the currently playing sound to the specified offset.
+
+        Args:
+            position: Position of the channel to set in units specified in the 'postype' parameter.
+            time_unit (TimeUnit.ms): Time unit to set the channel position by. See TimeUnit.
+
+        Wrapper for
+        FMOD_RESULT FMOD_Channel_Stop(FMOD_CHANNEL *channel);
+        with self.channel
+        """
         FMOD.FMOD_Channel_SetPosition(self.channel, position, time_unit)
     
     def stop(self):
+        """Stops the channel (or all channels in the channel group) from playing.
+        Makes it available for re-use by the priority system.
+
+        Wrapper for
+        FMOD_RESULT FMOD_Channel_Stop(FMOD_CHANNEL *channel);
+        with self.channel
+        """
         FMOD.FMOD_Channel_Stop(self.channel)
     
-    def set_volume(self, volume: float):
+    def set_volume(self, volume: float=1.0):
+        """Sets the volume level linearly.
+
+        Args:
+            volume (1.0): Linear volume level.
+
+        Wrapper for
+        FMOD_RESULT FMOD_Channel_SetVolume(
+            FMOD_CHANNEL *channel,
+            float volume
+        );
+        with self.channel
+        """
         FMOD.FMOD_Channel_SetVolume(self.channel, c_float(volume))
