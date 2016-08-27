@@ -24,7 +24,7 @@ class Track:
     def __init__(self, path: str):
         file = mutagen.File(path)
 
-        self.path = path
+        self.path = os.path.abspath(path)
         self.last_modification = os.path.getmtime(path)
         self.info = Info(file)
         self.tags = Tags(file)
