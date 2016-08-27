@@ -10,7 +10,7 @@ import mutagen.flac
 
 import jinja2
 
-import library_xml.constants
+from .constants import tags_conversion
 
 with open(os.path.join(os.path.dirname(__file__), "./templates/track.xml")) as file:
     TEMPLATE_XML_TRACK = jinja2.Template(file.read())
@@ -23,12 +23,10 @@ with open(os.path.join(os.path.dirname(__file__), "./templates/library.xml")) as
 def audio_file_to_tags_dict(file: mutagen.FileType) -> dict:
     tags = dict()
 
-    conversion = library_xml.constants.tags_conversion
-
     if isinstance(file.tags, mutagen.flac.VCFLACDict):
-        get_tags = lambda key: list(set(filter(lambda e: e, sum([file.tags.get(converted, []) for converted in conversion["flac"][key]], []))))
+        get_tags = lambda key: list(set(filter(lambda e: e, sum([file.tags.get(converted, []) for converted in tags_conversion["flac"][key]], []))))
         # this lambda is useful because the totaltracks and totaldiscs tags can have 2 different field names, it reads both values and then join the two lists of tags obtained
-        tags = {key: get_tags(key) for key in conversion["flac"]}
+        tags = {key: get_tags(key) for key in tags_conversion["flac"]}
 
     # TODO add MP3, MP4
 
