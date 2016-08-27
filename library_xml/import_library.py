@@ -19,30 +19,40 @@ with open(os.path.join(os.path.dirname(__file__), "./templates/track.xml")) as f
 with open(os.path.join(os.path.dirname(__file__), "./templates/library.xml")) as file:
     TEMPLATE_XML_LIBRARY = jinja2.Template(file.read())
 
+
 # TODO add documentation
 
 def audio_file_to_tags_dict(file: mutagen.FileType) -> dict:
-    tags = dict()
-
     if isinstance(file.tags, mutagen.flac.VCFLACDict):
         formt = "flac"
+        get_tags = lambda key: list(set(filter(lambda e: e, sum([file.tags.get(converted, []) for converted in tags_conversion[formt][key]], []))))
+        # this lambda is useful because some tags can have 2 different field names, it reads both values and then join the two lists of tags obtained
+        tags = {key: get_tags(key) for key in tags_conversion[formt]}
+
+        return tags
+
+
     elif isinstance(file.tags, mutagen.id3.ID3Tags):
         formt = "mp3"
+        get_tags = lambda key: list(filter(lambda e: e, sum([[file.tags.get(converted, None)] for converted in tags_conversion[formt][key] if file.tags.get(converted, None) is not None], [])))
+        # this lambda is useful because some tags can have 2 different field names, it reads both values and then join the two lists of tags obtained
+
+        tags = {key: get_tags(key) for key in tags_conversion[formt]}
+
+        # TODO handle tags formatting for some tags
+
+        tags = {key: list(map(str, tags[key])) for key in tags}
+
+        return tags
     else:
         # TODO add MP4
         raise NotImplementedError
-    
-    get_tags = lambda key: list(set(filter(lambda e: e, sum([file.tags.get(converted, []) for converted in tags_conversion[formt][key]], []))))
-    # this lambda is useful because some tags can have 2 different field names, it reads both values and then join the two lists of tags obtained
-    tags = {key: get_tags(key) for key in tags_conversion[formt]}
-
-    return tags
 
 
 def audio_file_to_info_dict(file: mutagen.FileType) -> dict:
     info = dict()
 
-    info["path"] = file.filename.replace("\\", "/")
+    info["path"] = os.path.abspath(file.filename.replace("\\", "/"))
     info["last_modification_time"] = os.path.getmtime(file.filename)
 
     # FLAC
