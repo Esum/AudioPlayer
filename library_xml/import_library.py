@@ -58,6 +58,10 @@ class Info(dict):
             self["sample_rate"] = file.info.sample_rate
             self["length"] = file.info.length
 
+        else:
+            # TODO add MP4
+            raise NotImplementedError("Not implemented format: {}".format(file.filename))
+
     def to_xml(self) -> str:
         return "".join("<{key}>{value}</{key}>".format(key=key, value=xml.sax.saxutils.escape(str(self[key]))) for key in sorted(self) if self[key])
 
@@ -91,7 +95,7 @@ class Tags(dict):
 
         else:
             # TODO add MP4
-            raise NotImplementedError
+            raise NotImplementedError("Not implemented format: {}".format(file.filename))
 
     def to_xml(self) -> str:
         tags = {key: "; ".join(self[key]) for key in self}
