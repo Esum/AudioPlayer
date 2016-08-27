@@ -8,9 +8,10 @@ FMOD = WinDLL("fmodL")
 
 class SystemUpdateThread(Thread):
 
-    def __init__(self, fmod_system: c_voidp):
+    def __init__(self, fmod_system: c_voidp, channel: c_voidp):
         super(SystemUpdateThread, self).__init__()
         self.system = fmod_system
+        self.channel = channel
     
     def run(self):
         for _ in range(0, 100):
@@ -35,10 +36,12 @@ class FMOD_System:
 
         if num_subsounds.value:
             FMOD.FMOD_Sound_GetSubSound(sound, 0, byref(sound))
+
+        channel = c_voidp()
         
-        FMOD.FMOD_System_PlaySound(self.system, sound, 0, 0, 0)
+        FMOD.FMOD_System_PlaySound(self.system, sound, 0, 0, byref(channel))
         
-        update_thread = SystemUpdateThread(self.system)
+        update_thread = SystemUpdateThread(self.system, channel)
         update_thread.start()
 
         return update_thread
