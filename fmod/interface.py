@@ -16,6 +16,9 @@ class PlayAudio:
     def get_position(self, time_unit: TimeUnit=TimeUnit.ms):
         return self.channel.get_position(time_unit)
     
+    def is_playing(self):
+        return self.channel.is_playing()
+    
     def set_paused(self, paused: bool):
         self.channel.set_paused(paused)
     

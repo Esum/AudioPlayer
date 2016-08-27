@@ -205,6 +205,11 @@ class Channel:
         FMOD.FMOD_Channel_GetPosition(self._channel, byref(position), postype)
         return position.value
     
+    def is_playing(self) -> bool:
+        playing = c_bool()
+        FMOD.FMOD_Channel_IsPlaying(self._channel, byref(playing))
+        return playing.value
+    
     def set_loop_count(self, loopcount: int=-1):
         FMOD.FMOD_Channel_SetLoopCount(self._channel, loopcount)
     
