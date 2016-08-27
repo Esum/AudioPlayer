@@ -164,8 +164,11 @@ class Sound:
     
     def get_loop_count(self):
         """Retrieves the current loop count value for the specified sound.
+
+        Returns:
+            The number of times a sound will loop by default before stopping. 0 = oneshot. 1 = loop once then stop. -1 = loop forever.
         
-        Remarks
+        Remarks:
             Unlike the channel loop count function, this function simply returns the value set with Sound::setLoopCount. It does not decrement as it plays (especially seeing as one sound can be played multiple times).
         
         """
@@ -195,7 +198,7 @@ class Sound:
     def release(self):
         """Frees a sound object.
 
-        Remarks
+        Remarks:
             This will free the sound object and everything created under it.
             If this is a stream that is playing as a subsound of another parent stream, then if this is the currently playing subsound, the whole stream will stop.
             Note - This function will block if it was opened with Mode.nonblocking and hasn't finished opening yet.
@@ -321,6 +324,15 @@ class System:
         return Sound(sound)
     
     def play_sound(self, sound: Sound, channelgroup=0, paused: bool=False, channel: Channel=0):
+        """Plays a sound object on a particular channel and ChannelGroup if desired.
+
+        Args:
+            sound: A sound to play.
+            channelgroup: A channelgroup become a member of. This is more efficient than using Channel.set_channel_group, as it does it during the channel setup, rather than connecting to the master channel group, then later disconnecting and connecting to the new channelgroup when specified. Optional. Use 0/NULL to ignore (use master ChannelGroup).
+            paused: True or false flag to specify whether to start the channel paused or not. Starting a channel paused allows the user to alter its attributes without it being audible, and unpausing with Channel::setPaused actually starts the sound.
+            channel (0): A channel that receives the newly playing channel. Optional. Use 0 to ignore.
+        
+        """
         if isinstance(channelgroup, int) and isinstance(channel, int):
             FMOD.FMOD_System_PlaySound(self._system, sound._sound, 0, paused, 0)
         elif isinstance(channelgroup, int):
