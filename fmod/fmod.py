@@ -7,6 +7,17 @@ FMOD = WinDLL("fmodL")
 
 
 class TimeUnit:
+    """
+    ms: Milliseconds.
+    pcm: PCM samples, related to milliseconds * samplerate / 1000.
+    pcmbytes: Bytes, related to PCM samples * channels * datawidth (ie 16bit = 2 bytes).
+    rawbytes: Raw file bytes of (compressed) sound data (does not include headers). Only used by Sound::getLength and Channel::getPosition.
+    pcmfraction: Fractions of 1 PCM sample. Unsigned int range 0 to 0xFFFFFFFF. Used for sub-sample granularity for DSP purposes.
+    modorder: MOD/S3M/XM/IT. Order in a sequenced module format. Use Sound::getFormat to determine the PCM format being decoded to.
+    modrow: MOD/S3M/XM/IT. Current row in a sequenced module format. Sound::getLength will return the number of rows in the currently playing or seeked to pattern.
+    modpattern: MOD/S3M/XM/IT. Current pattern in a sequenced module format. Sound::getLength will return the number of patterns in the song and Channel::getPosition will return the currently playing pattern.
+    buffered: Time value as seen by buffered stream. This is always ahead of audible time, and is only used for processing.
+    """
     ms = 0x00000001
     pcm = 0x00000002
     pcmbytes = 0x00000004
