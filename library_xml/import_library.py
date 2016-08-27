@@ -41,6 +41,8 @@ class Track:
         self.info = Info(file)
         self.tags = Tags(file)
 
+    def __repr__(self):
+        return 'Track("{}")'.format(self.path)
     def to_xml(self) -> str:
         """Serializes the informations to a xml formatted string
 
