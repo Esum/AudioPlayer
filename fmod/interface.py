@@ -18,7 +18,7 @@ class PlayAudio:
         self.system = System(1, self.flags)
         self.channel = Channel()
         self.sound = None
-        self.repeat = repeat 
+        self.set_repeat(repeat)
     
     def play_sound(self, path: str):
         if self.sound is not None:
@@ -58,7 +58,14 @@ class PlayAudio:
         self.channel.set_position(position, time_unit)
     
     def set_repeat(self, repeat: bool=True):
+        """Repeat the sound when after it ends
+
+        Args:
+            repeat (True): Enables or disables the looping of the track.
+        
+        """
         self.repeat = repeat
+        self.channel.set_loop_count(-1 if repeat else 0)
         if self.sound is not None:
             self.sound.set_loop_count(-1 if repeat else 0)
     
