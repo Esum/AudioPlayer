@@ -185,7 +185,7 @@ class Channel:
 
     def get_position(self, postype):
         position = c_uint()
-        FMOD.FMOD_Channel_GetPosition(self._channel, position, postype)
+        FMOD.FMOD_Channel_GetPosition(self._channel, byref(position), postype)
         return position.value
     
     def set_loop_count(self, loopcount: int=-1):
