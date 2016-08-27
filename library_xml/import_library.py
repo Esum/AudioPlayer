@@ -108,7 +108,7 @@ class Library(list):
 
     def __init__(self, path):
         super().__init__()
-        self.path = path
+        self.path = os.path.abspath(path)
         self.initialize()
 
     def initialize(self):
