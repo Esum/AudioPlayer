@@ -26,7 +26,7 @@ def audio_file_to_tags_dict(file: mutagen.FileType) -> dict:
 
     if isinstance(file.tags, mutagen.flac.VCFLACDict):
         formt = "flac"
-    elif isinstance(file.tags, mutagen.id3.ID3Tags)
+    elif isinstance(file.tags, mutagen.id3.ID3Tags):
         formt = "mp3"
     else:
         # TODO add MP4
