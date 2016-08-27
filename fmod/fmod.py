@@ -113,6 +113,11 @@ class Channel:
             channel = c_voidp()
         self._channel = channel
     
+    def get_paused(self):
+        paused = c_bool()
+        FMOD.FMOD_Channel_GetPaused(self._channel, byref(paused))
+        return paused.value
+
     def get_position(self, postype):
         position = c_uint()
         FMOD.FMOD_Channel_GetPosition(self._channel, position, postype)
@@ -123,6 +128,9 @@ class Channel:
     
     def set_loop_points(self, loopstart: int, loopstarttype, loopend: int, loopendtype):
         FMOD.FMOD_Channel_SetLoopPoints(self._channel, loopstart, loopstarttype, loopend, loopendtype)
+    
+    def set_paused(self, paused: bool):
+        FMOD.FMOD_Channel_SetPaused(self._channel, paused)
     
     def set_position(self, position: int, postype):
         FMOD.FMOD_Channel_SetPosition(self._channel, position, postype)
