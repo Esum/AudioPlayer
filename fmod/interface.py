@@ -77,4 +77,5 @@ class PlayAudio:
             # we free the last playing sound memory
             self.sound.release()
             del self.sound
+            self.sound = None
         self.channel.stop()
