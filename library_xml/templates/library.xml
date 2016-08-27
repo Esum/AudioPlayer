@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
-<library path="{{ path }}">
+<library path="{{ path }}" export_time="{{ export_time }}">
     {% for track in tracks %}
         {{ track }}
     {% endfor %}
