@@ -168,9 +168,9 @@ class Sound:
         FMOD.FMOD_Sound_GetNumSubSounds(self._sound, num_subsounds)
         return num_subsounds.value
     
-    def get_subsound(self, int):
+    def get_subsound(self, numsubsound: int):
         subsound = c_voidp()
-        FMOD.FMOD_Sound_GetSubSound(self._sound, 0, byref(subsound))
+        FMOD.FMOD_Sound_GetSubSound(self._sound, numsubsound, byref(subsound))
         return Sound(subsound)
     
     def release(self):
