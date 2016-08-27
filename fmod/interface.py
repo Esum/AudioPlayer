@@ -13,6 +13,9 @@ class PlayAudio:
             sound = sound.get_subsound(0)
         self.system.play_sound(sound, channel=self.channel)
     
+    def get_position(self, time_unit: TimeUnit=TimeUnit.ms):
+        return self.channel.get_position(time_unit)
+    
     def set_position(self, position: int, time_unit: TimeUnit=TimeUnit.ms):
         self.channel.set_position(position, time_unit)
     
