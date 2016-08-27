@@ -269,7 +269,6 @@ class Library(list):
                 self.append(Track(path))
             except Exception:
                 # TODO add log message
-                print(path)
                 pass
 
     def clean_deleted_files(self) -> None:
