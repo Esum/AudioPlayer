@@ -151,6 +151,12 @@ class Mode:
 
 
 class Sound:
+    """Sound object
+
+    Attributes:
+        _sound (c_voidp): A C pointer to the sound.
+    
+    """
 
     def __init__(self, sound=None):
         if sound is None:
@@ -172,6 +178,12 @@ class Sound:
 
 
 class Channel:
+    """Channel object
+
+    Attributes:
+        _channel (c_voidp): A C pointer to the channel.
+
+    """
 
     def __init__(self, channel=None):
         if channel is None:
@@ -208,13 +220,44 @@ class Channel:
 
 
 class System:
+    """System object
+
+    Attributes:
+        _system (c_voidp): A C pointer to the system.
+    
+    """
 
     def __init__(self, maxchannels: int, flags):
+        """Creates the system object and initializes it, and the sound device.
+
+        Args:
+            maxchannels: The maximum number of channels to be used in FMOD. They are also called 'virtual channels' as you can play as many of these as you want, even if you only have a small number of software voices. See remarks for more.
+            flags: See InitFlags. This can be a selection of flags bitwise OR'ed together to change the behaviour of FMOD at initialization time.
+        
+        Remarks:
+            Virtual channels.
+            These types of voices are the ones you work with using the FMOD::Channel API. The advantage of virtual channels are, unlike older versions of FMOD, you can now play as many sounds as you like without fear of ever running out of voices, or playsound failing. You can also avoid 'channel stealing' if you specify enough virtual voices.
+            As an example, you can play 1000 sounds at once, even on a 32 channel soundcard.
+            FMOD will only play the most important/closest/loudest (determined by volume/distance/geometry and priority settings) voices, and the other 968 voices will be virtualized without expense to the CPU. The voice's cursor positions are updated.
+            When the priority of sounds change or emulated sounds get louder than audible ones, they will swap the actual voice resource over and play the voice from its correct position in time as it should be heard.
+            What this means is you can play all 1000 sounds, if they are scattered around the game world, and as you move around the world you will hear the closest or most important 32, and they will automatically swap in and out as you move.
+            Currently the maximum channel limit is 4093.
+        """
         self._system = c_voidp()
         FMOD.FMOD_System_Create(byref(self._system))
         FMOD.FMOD_System_Init(self._system, maxchannels, flags, 0)
     
     def create_stream(self, name_or_data: str, mode=0):
+        """Opens a sound for streaming. This function is a helper function that is the same as System.create_sound but has the createstream flag added internally.
+
+        Args:
+            name_of_data (str): Name of the file or URL to open encoded in a UTF-8 string.
+            mode: Behaviour modifier for opening the sound. See Mode. Also see remarks for more.
+
+        Returns:
+            A Sound object created from the name_of_data
+
+        """
         sound = c_voidp()
         FMOD.FMOD_System_CreateStream(self._system, name_or_data.encode('ascii'), mode, 0, byref(sound))
         return Sound(sound)
