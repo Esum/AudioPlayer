@@ -85,6 +85,71 @@ class InitFlags:
     profile_meter_all = 0x00200000
 
 
+class Mode:
+    """
+    default: default for all modes listed below. loop_off, _2d, _3d_worldrelative, _3d_inverserolloff
+    loop_off: For non looping sounds. (default). Overrides loop_normal / loop_bidi.
+    loop_normal: For forward looping sounds.
+    loop_bidi: For bidirectional looping sounds. (only works on software mixed static sounds).
+    _2d: Ignores any 3d processing. (default).
+    _3d: Makes the sound positionable in 3D. Overrides _2d.
+    createstream: Decompress at runtime, streaming from the source provided (ie from disk). Overrides createsample and createcompressedsample. Note a stream can only be played once at a time due to a stream only having 1 stream buffer and file handle. Open multiple streams to have them play concurrently.
+    createsample: Decompress at loadtime, decompressing or decoding whole file into memory as the target sample format (ie PCM). Fastest for playback and most flexible.
+    createcompressedsample: Load MP2/MP3/IMAADPCM/Vorbis/AT9 or XMA into memory and leave it compressed. Vorbis/AT9 encoding only supported in the FSB file format. During playback the FMOD software mixer will decode it in realtime as a 'compressed sample'. Overrides REATESAMPLE. If the sound data is not one of the supported formats, it will behave as if it was created with FMOD_CREATESAMPLE and decode the sound into PCM.
+    openuser: Opens a user created static sample or stream. Use FMOD_CREATESOUNDEXINFO to specify format and/or read callbacks. If a user created 'sample' is created with no read callback, the sample will be empty. Use Sound::lock and Sound::unlock to place sound data into the sound if this is the case.
+    openmemory: "name_or_data" will be interpreted as a pointer to memory instead of filename for creating sounds. Use FMOD_CREATESOUNDEXINFO to specify length. If used with createsample or, createcompressedsample, FMOD duplicates the memory into its own buffers. Your own buffer can be freed after open. If used with createstream, FMOD will stream out of the buffer whose pointer you passed in. In this case, your own buffer should not be freed until you have finished with and released the stream.
+    openmemory_point: "name_or_data" will be interpreted as a pointer to memory instead of filename for creating sounds. Use FMOD_CREATESOUNDEXINFO to specify length. This differs to openmemory in that it uses the memory as is, without duplicating the memory into its own buffers. Cannot be freed after open, only after Sound::release. Will not work if the data is compressed and FMOD_CREATECOMPRESSEDSAMPLE is not used.
+    openraw: Will ignore file format and treat as raw pcm. Use FMOD_CREATESOUNDEXINFO to specify format. Requires at least defaultfrequency, numchannels and format to be specified before it will open. Must be little endian data.
+    openonly: Just open the file, dont prebuffer or read. Good for fast opens for info, or when sound::readData is to be used.
+    accuratetime: For System::createSound - for accurate Sound::getLength/Channel::setPosition on VBR MP3, and MOD/S3M/XM/IT/MIDI files. Scans file first, so takes longer to open. openonly does not affect this.
+    mpegsearch: For corrupted / bad MP3 files. This will search all the way through the file until it hits a valid MPEG header. Normally only searches for 4k.
+    nonblocking: For opening sounds and getting streamed subsounds (seeking) asyncronously. Use Sound::getOpenState to poll the state of the sound as it opens or retrieves the subsound in the background.
+    unique: unique sound, can only be played one at a time.
+    _3d_headrelative: Make the sound's position, velocity and orientation relative to the listener.
+    _3d_worldrelative: Make the sound's position, velocity and orientation absolute (relative to the world). (default)
+    _3d_inverserolloff: This sound will follow the inverse rolloff model where mindistance = full volume, maxdistance = where sound stops attenuating, and rolloff is fixed according to the global rolloff factor. (default)
+    _3d_linearrolloff: This sound will follow a linear rolloff model where mindistance = full volume, maxdistance = silence.
+    _3d_linearsquarerolloff: This sound will follow a linear-square rolloff model where mindistance = full volume, maxdistance = silence.
+    _3d_inversetaperedrolloff: This sound will follow the inverse rolloff model at distances close to mindistance and a linear-square rolloff close to maxdistance.
+    _3d_customrolloff: This sound will follow a rolloff model defined by Sound::set3DCustomRolloff / Channel::set3DCustomRolloff.
+    _3d_ignoregeometry: Is not affect by geometry occlusion. If not specified in Sound::setMode, or Channel::setMode, the flag is cleared and it is affected by geometry again.
+    ignoretags: Skips id3v2/asf/etc tag checks when opening a sound, to reduce seek/read overhead when opening files (helps with CD performance).
+    lowmem: Removes some features from samples to give a lower memory overhead, like Sound::getName. See remarks.
+    loadsecondaryram: Load sound into the secondary RAM of supported platform. On PS3, sounds will be loaded into RSX/VRAM.
+    virtual_playfromstart: For sounds that start virtual (due to being quiet or low importance), instead of swapping back to audible, and playing at the correct offset according to time, this flag makes the sound play from the start.
+    """
+    default = 0x00000000
+    loop_off = 0x00000001
+    loop_normal = 0x00000002
+    loop_bidi = 0x00000004
+    _2d = 0x00000008
+    _3d = 0x00000010
+    createstream = 0x00000080
+    createsample = 0x00000100
+    createcompressedsample = 0x00000200
+    openuser = 0x00000400
+    openmemory = 0x00000800
+    openmemory_point = 0x10000000
+    openraw = 0x00001000
+    openonly = 0x00002000
+    accuratetime = 0x00004000
+    mpegsearch = 0x00008000
+    nonblocking = 0x00010000
+    unique = 0x00020000
+    _3d_headrelative = 0x00040000
+    _3d_worldrelative = 0x00080000
+    _3d_inverserolloff = 0x00100000
+    _3d_linearrolloff = 0x00200000
+    _3d_linearsquarerolloff = 0x00400000
+    _3d_inversetaperedrolloff = 0x00800000
+    _3d_customrolloff = 0x04000000
+    _3d_ignoregeometry = 0x40000000
+    ignoretags = 0x02000000
+    lowmem = 0x08000000
+    loadsecondaryram = 0x20000000
+    virtual_playfromstart = 0x80000000
+
+
 class Sound:
 
     def __init__(self, sound=None):
