@@ -190,12 +190,12 @@ class Channel:
             channel = c_voidp()
         self._channel = channel
     
-    def get_paused(self):
     def get_loop_count(self) -> int:
         loopcount = c_int()
         FMOD.FMOD_Channel_GetLoopCount(self._channel, byref(loopcount))
         return loopcount.value
     
+    def get_paused(self) -> bool:
         paused = c_bool()
         FMOD.FMOD_Channel_GetPaused(self._channel, byref(paused))
         return paused.value
