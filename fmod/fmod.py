@@ -203,6 +203,12 @@ class Channel:
         return loopcount.value
     
     def get_paused(self) -> bool:
+        """Retrieves the paused state.
+
+        Returns:
+            True if the current played sound is paused, False otherwise.
+        
+        """
         paused = c_bool()
         FMOD.FMOD_Channel_GetPaused(self._channel, byref(paused))
         return paused.value
@@ -214,6 +220,7 @@ class Channel:
 
         Returns:
             The current playback position for the specified channel.
+        
         """
         position = c_uint()
         FMOD.FMOD_Channel_GetPosition(self._channel, byref(position), postype)

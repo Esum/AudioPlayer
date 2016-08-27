@@ -38,6 +38,7 @@ class PlayAudio:
 
         Returns:
             The current playback position for the specified channel.
+        
         """
         return self.channel.get_position(time_unit)
     
