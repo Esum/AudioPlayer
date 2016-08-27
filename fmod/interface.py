@@ -1,10 +1,10 @@
-from fmod import System, Sound, Channel, TimeUnit
+from fmod import System, Sound, Channel, TimeUnit, Mode
 
 
 class PlayAudio:
 
     def __init__(self):
-        self.system = System(1, 0)
+        self.system = System(1, Mode.loop_normal | Mode.ignoretags)
         self.channel = Channel()
     
     def play_sound(self, path: str):
