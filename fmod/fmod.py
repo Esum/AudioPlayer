@@ -33,6 +33,9 @@ class SystemUpdateThread(Thread):
     
     def set_position(self, position: int, time_unit: TimeUnit=TimeUnit.ms):
         FMOD.FMOD_Channel_SetPosition(self.channel, position, time_unit.value)
+    
+    def stop(self):
+        FMOD.FMOD_Channel_Stop(self.channel)
 
 
 class FMOD_System:
