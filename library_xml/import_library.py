@@ -2,6 +2,8 @@ import os
 import os.path
 import time
 
+import re
+
 import xml.sax.saxutils
 import xml.dom.minidom
 
@@ -176,6 +178,8 @@ class Tags(dict):
 
     """
 
+    RE_MP3_DISCNUMBER_DISCTOTAL = re.compile(r"(?P<discnumber>[1-9]+[0-9]*)/(?P<disctotal>[1-9]+[0-9]*)")
+
     def __init__(self, file: mutagen.FileType):
         super().__init__()
 
@@ -198,6 +202,14 @@ class Tags(dict):
                 self[key] = get_tags(key)
 
             # TODO handle tags formatting for some tags
+
+            # discnumber / disctotal
+            discnumber_tag_value = self["discnumber"][0].text[0]
+            discnumber_regex_result = Tags.RE_MP3_DISCNUMBER_DISCTOTAL.match(discnumber_tag_value)
+
+            if discnumber_regex_result:
+                self["discnumber"] = [discnumber_regex_result.group("discnumber")]
+                self["disctotal"] = [discnumber_regex_result.group("disctotal")]
 
             for key in tags_conversion[formt]:
                 self[key] = list(map(str, self[key]))
