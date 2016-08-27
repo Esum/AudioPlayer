@@ -2,6 +2,16 @@ from fmod import System, Sound, Channel, TimeUnit, Mode
 
 
 class PlayAudio:
+    """High level audio interface for fmod
+    
+    Attributes:
+        flags (Mode.loop_normal | Mode.ignoretags): The flags for the system and sounds initializations.
+        system: The system used by the interface.
+        channel: The channel used by the system of the interface.
+        sound: The current playing sound of the channel.
+        repeat (False): Repeat the current playing sound.
+
+    """
 
     def __init__(self, repeat=False, flags=Mode.loop_normal | Mode.ignoretags):
         self.flags = flags
@@ -12,6 +22,7 @@ class PlayAudio:
     
     def play_sound(self, path: str):
         if self.sound is not None:
+            # we free the last playing sound memory
             self.sound.release()
             del self.sound
         self.sound = self.system.create_stream(path, mode=self.flags)
@@ -42,6 +53,7 @@ class PlayAudio:
         
     def stop(self):
         if self.sound is not None:
+            # we free the last playing sound memory
             self.sound.release()
             del self.sound
         self.channel.stop()
