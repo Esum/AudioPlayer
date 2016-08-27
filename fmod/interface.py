@@ -3,15 +3,22 @@ from fmod import System, Sound, Channel, TimeUnit, Mode
 
 class PlayAudio:
 
-    def __init__(self):
-        self.system = System(1, Mode.loop_normal | Mode.ignoretags)
+    def __init__(self, repeat=False, flags=Mode.loop_normal | Mode.ignoretags):
+        self.flags = flags
+        self.system = System(1, self.flags)
         self.channel = Channel()
+        self.sound = None
+        self.repeat = repeat 
     
     def play_sound(self, path: str):
-        sound = self.system.create_stream(path)
-        if sound.get_num_subsounds():
-            sound = sound.get_subsound(0)
-        self.system.play_sound(sound, channel=self.channel)
+        if self.sound is not None:
+            self.sound.release()
+            del self.sound
+        self.sound = self.system.create_stream(path, mode=self.flags)
+        if self.sound.get_num_subsounds():
+            self.sound = self.sound.get_subsound(0)
+        self.set_repeat(self.repeat)
+        self.system.play_sound(self.sound, channel=self.channel)
     
     def get_position(self, time_unit: TimeUnit=TimeUnit.ms):
         return self.channel.get_position(time_unit)
@@ -26,10 +33,15 @@ class PlayAudio:
         self.channel.set_position(position, time_unit)
     
     def set_repeat(self, repeat: bool=True):
-        self.channel.set_loop_count(-1 if repeat else 0)
+        self.repeat = repeat
+        if self.sound is not None:
+            self.sound.set_loop_count(-1 if repeat else 0)
     
     def set_volume(self, volume: float=1.0):
         self.channel.set_volume(volume)
         
     def stop(self):
+        if self.sound is not None:
+            self.sound.release()
+            del self.sound
         self.channel.stop()
