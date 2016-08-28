@@ -355,16 +355,26 @@ class Library(list):
 
     """
 
-    def __init__(self, path):
+    def __init__(self, path: str):
+        """Creates a Library but DOES NOT import the music files
+
+        Args:
+            path: path to the root of the folder to import
+        """
+        super().__init__()
+        self.path = os.path.abspath(path)
+
+    @staticmethod
+    def from_path(path: str):
         """Initializes the library and imports all the music files located in path and its subfolders
 
         Args:
             path: path to the root of the folder to import
 
         """
-        super().__init__()
-        self.path = os.path.abspath(path)
-        self.import_untracked_files()
+        lib = Library(path)
+        lib.import_untracked_files()
+        return lib
 
     def clean_deleted_files(self) -> None:
         """Deletes tracks which have a path doesn't point to a file
