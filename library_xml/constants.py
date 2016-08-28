@@ -1,4 +1,5 @@
 # TODO add MP4
+
 tags_conversion = {
     "flac": {
         "album": {"ALBUM"},
@@ -149,3 +150,5 @@ tags_conversion = {
         "website": {"WOAR"},
     }
 }
+
+tags_names = {key for key in tags_conversion["flac"]}

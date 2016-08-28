@@ -6,6 +6,7 @@ import re
 
 import xml.sax.saxutils
 import xml.dom.minidom
+import xml.etree.ElementTree as ET
 
 import mutagen
 import mutagen.mp3
@@ -14,7 +15,7 @@ import mutagen.flac
 
 import jinja2
 
-from library_xml.constants import tags_conversion
+from library_xml.constants import tags_conversion, tags_names
 
 
 class Track:
@@ -273,6 +274,34 @@ class Tags(dict):
 
         return tags
 
+    @staticmethod
+    def from_xml(xml: str):
+        return Tags.from_root_tree(ET.fromstring(xml))
+
+    @staticmethod
+    def from_root_tree(root: ET.Element):
+        tags = Tags()
+        keys = tags_names
+
+        for key in keys:
+            subelement = root.find(key)
+
+            if subelement is not None:
+                tags[key] = list(map(str.strip, str(subelement.text).split(";")))
+
+        return tags
+
+    def to_root_tree(self) -> ET.Element:
+        root = ET.Element("tags")
+
+        for key in self:
+            if self[key]:
+                element = ET.Element(key)
+                element.text = xml.sax.saxutils.escape(str(";".join(self[key])))
+                root.append(element)
+
+        return root
+
     def to_xml(self) -> str:
         """Serializes the tags to a xml formatted string
 
@@ -290,8 +319,7 @@ class Tags(dict):
             str: xml output
 
         """
-        tags = {key: "; ".join(self[key]) for key in self}
-        return "".join("<{key}>{value}</{key}>".format(key=key, value=xml.sax.saxutils.escape(tags[key])) for key in sorted(tags) if tags[key])
+        return ET.tostring(self.to_root_tree(), encoding="utf-8").decode(encoding="utf-8")
 
 
 class Library(list):
