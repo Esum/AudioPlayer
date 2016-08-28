@@ -1,8 +1,0 @@
-<track path="{{ path }}" last_modification="{{ last_modification }}">
-    <info>
-        {{ info_xml}}
-    </info>
-    <tags>
-        {{ tags_xml }}
-    </tags>
-</track>
