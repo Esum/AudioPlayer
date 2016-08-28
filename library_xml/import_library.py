@@ -173,6 +173,33 @@ class Info(dict):
 
         return info
 
+    @staticmethod
+    def from_xml(xml: str):
+        return Info.from_root_tree(ET.fromstring(xml))
+
+    @staticmethod
+    def from_root_tree(root: ET.Element):
+        info = Info()
+        keys = {"codec", "bitrate", "channels", "sample_rate", "bits_per_sample", "length", "bitrate_mode"}
+
+        for key in keys:
+            subelement = root.find(key)
+
+            if subelement is not None:
+                info[key] = subelement.text
+
+        return info
+
+    def to_root_tree(self) -> ET.Element:
+        root = ET.Element("info")
+
+        for key in self:
+            element = ET.Element(key)
+            element.text = xml.sax.saxutils.escape(str(self[key]))
+            root.append(element)
+
+        return root
+
     def to_xml(self) -> str:
         """Serializes the informations to a xml formatted string
 
@@ -190,7 +217,7 @@ class Info(dict):
                     str: xml output
 
         """
-        return "".join("<{key}>{value}</{key}>".format(key=key, value=xml.sax.saxutils.escape(str(self[key]))) for key in sorted(self) if self[key])
+        return ET.tostring(self.to_root_tree(), encoding="utf-8").decode("utf-8")
 
 
 class Tags(dict):
