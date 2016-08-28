@@ -276,26 +276,7 @@ class Library(list):
         """
         super().__init__()
         self.path = os.path.abspath(path)
-        self.initialize()
-
-    def initialize(self) -> None:
-        """Wipes the library and import all supported music files located in self.path and its subfolders
-
-        Music tracks that failed to be imported are ignored.
-
-        Todo:
-            - add log message when a track is ignored
-
-        """
-        super().__init__()
-        paths = [os.path.abspath(os.path.join(root, name)) for root, dirs, files in os.walk(self.path) for name in files]
-
-        for path in paths:
-            try:
-                self.append(Track(path))
-            except Exception:
-                # TODO add log message
-                pass
+        self.import_untracked_files()
 
     def clean_deleted_files(self) -> None:
         """Deletes tracks which have a path doesn't point to a file
