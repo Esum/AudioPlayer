@@ -5,29 +5,6 @@ VERSION = 0x00010810
 FMOD = WinDLL("fmodL")
 
 
-class TimeUnit:
-    """
-    ms: Milliseconds.
-    pcm: PCM samples, related to milliseconds * samplerate / 1000.
-    pcmbytes: Bytes, related to PCM samples * channels * datawidth (ie 16bit = 2 bytes).
-    rawbytes: Raw file bytes of (compressed) sound data (does not include headers). Only used by Sound::getLength and Channel::getPosition.
-    pcmfraction: Fractions of 1 PCM sample. Unsigned int range 0 to 0xFFFFFFFF. Used for sub-sample granularity for DSP purposes.
-    modorder: MOD/S3M/XM/IT. Order in a sequenced module format. Use Sound::getFormat to determine the PCM format being decoded to.
-    modrow: MOD/S3M/XM/IT. Current row in a sequenced module format. Sound::getLength will return the number of rows in the currently playing or seeked to pattern.
-    modpattern: MOD/S3M/XM/IT. Current pattern in a sequenced module format. Sound::getLength will return the number of patterns in the song and Channel::getPosition will return the currently playing pattern.
-    buffered: Time value as seen by buffered stream. This is always ahead of audible time, and is only used for processing.
-    """
-    ms = 0x00000001
-    pcm = 0x00000002
-    pcmbytes = 0x00000004
-    rawbytes = 0x00000008
-    pcmfraction = 0x00000010
-    modorder = 0x00000100
-    modrow = 0x00000200
-    modpattern = 0x00000400
-    buffered = 0x10000000
-
-
 class DebugFlags:
     """
     level_none: Disable all messages.
@@ -147,6 +124,42 @@ class Mode:
     lowmem = 0x08000000
     loadsecondaryram = 0x20000000
     virtual_playfromstart = 0x80000000
+
+
+class PluginType:
+    """
+    output: The plugin type is an output module. FMOD mixed audio will play through one of these devices.
+    codec: The plugin type is a file format codec. FMOD will use these codecs to load file formats for playback.
+    dsp: The plugin type is a DSP unit. FMOD will use these plugins as part of its DSP network to apply effects to output or generate sound in realtime.
+    max: Maximum number of plugin types supported.
+    """
+    output = 0
+    codec = 1
+    dsp = 2
+    max = 3
+
+
+class TimeUnit:
+    """
+    ms: Milliseconds.
+    pcm: PCM samples, related to milliseconds * samplerate / 1000.
+    pcmbytes: Bytes, related to PCM samples * channels * datawidth (ie 16bit = 2 bytes).
+    rawbytes: Raw file bytes of (compressed) sound data (does not include headers). Only used by Sound::getLength and Channel::getPosition.
+    pcmfraction: Fractions of 1 PCM sample. Unsigned int range 0 to 0xFFFFFFFF. Used for sub-sample granularity for DSP purposes.
+    modorder: MOD/S3M/XM/IT. Order in a sequenced module format. Use Sound::getFormat to determine the PCM format being decoded to.
+    modrow: MOD/S3M/XM/IT. Current row in a sequenced module format. Sound::getLength will return the number of rows in the currently playing or seeked to pattern.
+    modpattern: MOD/S3M/XM/IT. Current pattern in a sequenced module format. Sound::getLength will return the number of patterns in the song and Channel::getPosition will return the currently playing pattern.
+    buffered: Time value as seen by buffered stream. This is always ahead of audible time, and is only used for processing.
+    """
+    ms = 0x00000001
+    pcm = 0x00000002
+    pcmbytes = 0x00000004
+    rawbytes = 0x00000008
+    pcmfraction = 0x00000010
+    modorder = 0x00000100
+    modrow = 0x00000200
+    modpattern = 0x00000400
+    buffered = 0x10000000
 
 
 class Sound:
@@ -335,6 +348,19 @@ class System:
         FMOD.FMOD_System_CreateStream(self._system, name_or_data.encode('ascii'), mode, 0, byref(sound))
         return Sound(sound)
     
+    def load_plugin(self, filename: str, priority: int) -> int:
+        """Loads an FMOD plugin. This could be a DSP, file format or output plugin.
+
+        Args:
+            filename : Filename of the plugin to be loaded encoded in a UTF-8 string.
+            priority: FMOD_PLUGINTYPE_CODEC only, priority of the codec compared to other codecs. 0 = most important, higher numbers = less importance.
+        
+        """
+        handle = c_uint()
+        priority = c_uint(priority)
+        FMOD.FMOD_System_LoadPlugin(self._system, filename.encode('ascii'), byref(handle), priority)
+        return handle.value
+    
     def play_sound(self, sound: Sound, channelgroup=0, paused: bool=False, channel: Channel=0):
         """Plays a sound object on a particular channel and ChannelGroup if desired.
 
@@ -356,6 +382,15 @@ class System:
     
     def release(self):
         FMOD.FMOD_System_Release(self._system)
+    
+    def set_plugin_path(self, path: str):
+        """Specify a base search path for plugins so they can be placed somewhere else than the directory of the main executable.
+
+        Args:
+            A character string containing a correctly formatted path to load plugins from.
+        
+        """
+        FMOD.FMOD_System_SetPluginPath(self._system, path.encode('ascii'))
     
     def update(self):
         FMOD.FMOD_System_Update(self._system)

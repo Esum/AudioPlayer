@@ -17,6 +17,8 @@ class PlayAudio:
     def __init__(self, volume=1.0, repeat=False, flags=Mode.loop_normal|Mode.ignoretags):
         self.flags = flags
         self.system = System(1, self.flags)
+        self.system.set_plugin_path("plugins")
+        self.system.load_plugin('codec_aac.dll')
         self.channel = Channel()
         self.sound = None
         self.set_volume(volume)
