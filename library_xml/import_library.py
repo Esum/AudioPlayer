@@ -30,18 +30,30 @@ class Track:
     with open(os.path.join(os.path.dirname(__file__), "./templates/track.xml")) as file:
         XML_TEMPLATE = jinja2.Template(file.read())
 
-    def __init__(self, path: str):
+    def __init__(self, path, last_modification, info, tags):
+        self.path = path
+        self.last_modification = last_modification
+        self.info = info
+        self.tags = tags
+
+    @staticmethod
+    def from_path(path: str):
         """Reads the file's informations
 
         Args:
             path (str): path to the file
+
+        Returns:
+            Track
         """
         file = mutagen.File(path)
 
-        self.path = os.path.abspath(path)
-        self.last_modification = os.path.getmtime(path)
-        self.info = Info(file)
-        self.tags = Tags(file)
+        path = os.path.abspath(path)
+        last_modification = os.path.getmtime(path)
+        info = Info.from_mutagen_file(file)
+        tags = Tags.from_mutagen_file(file)
+
+        return Track(path, last_modification, info, tags)
 
     def __repr__(self):
         return 'Track("{}")'.format(self.path)
@@ -58,7 +70,10 @@ class Track:
     def refresh(self) -> None:
         """Checks the file has been modified since import and re-import it if it has"""
         if self.has_file_changed():
-            self.__init__(self.path)
+            file = mutagen.File(self.path)
+            self.last_modification = os.path.getmtime(self.path)
+            self.info = Info.from_mutagen_file(file)
+            self.tags = Tags.from_mutagen_file(file)
 
     def to_xml(self) -> str:
         """Serializes the informations to a xml formatted string
@@ -111,37 +126,43 @@ class Info(dict):
 
     """
 
-    def __init__(self, file: mutagen.FileType):
+    @staticmethod
+    def from_mutagen_file(file: mutagen.FileType):
         """Extracts the needed information from the file
 
         Args:
             file: mutagen.FileType object
 
+        Returns:
+            Info
+
         """
-        super().__init__()
+        info = Info()
 
         # FLAC
         if isinstance(file.info, mutagen.flac.StreamInfo):
-            self["codec"] = "FLAC"
-            self["bitrate"] = file.info.bits_per_sample * file.info.sample_rate
-            self["channels"] = file.info.channels
-            self["sample_rate"] = file.info.sample_rate
-            self["bits_per_sample"] = file.info.bits_per_sample
-            self["length"] = file.info.length
+            info["codec"] = "FLAC"
+            info["bitrate"] = file.info.bits_per_sample * file.info.sample_rate
+            info["channels"] = file.info.channels
+            info["sample_rate"] = file.info.sample_rate
+            info["bits_per_sample"] = file.info.bits_per_sample
+            info["length"] = file.info.length
 
 
         # MP3
         elif isinstance(file.info, mutagen.mp3.MPEGInfo):
-            self["codec"] = "MP3"
-            self["bitrate"] = file.info.bitrate
-            self["bitrate_mode"] = str(file.info.bitrate_mode)
-            self["channels"] = file.info.channels
-            self["sample_rate"] = file.info.sample_rate
-            self["length"] = file.info.length
+            info["codec"] = "MP3"
+            info["bitrate"] = file.info.bitrate
+            info["bitrate_mode"] = str(file.info.bitrate_mode)
+            info["channels"] = file.info.channels
+            info["sample_rate"] = file.info.sample_rate
+            info["length"] = file.info.length
 
         else:
             # TODO add MP4
             raise NotImplementedError("Not implemented format: {}".format(file.filename))
+
+        return info
 
     def to_xml(self) -> str:
         """Serializes the informations to a xml formatted string
@@ -180,8 +201,9 @@ class Tags(dict):
 
     RE_ID3_NUMBER_TOTAL = re.compile(r"(?P<number>[1-9]+[0-9]*)/(?P<total>[1-9]+[0-9]*)")
 
-    def __init__(self, file: mutagen.FileType):
-        super().__init__()
+    @staticmethod
+    def from_mutagen_file(file: mutagen.FileType):
+        tags = Tags()
 
         # FLAC
         if isinstance(file.tags, mutagen.flac.VCFLACDict):
@@ -190,7 +212,7 @@ class Tags(dict):
             # this lambda is useful because some tags can have 2 different field names, it reads both values and then join the two lists of tags obtained
 
             for key in tags_conversion[formt]:
-                self[key] = get_tags(key)
+                tags[key] = get_tags(key)
 
         # MP3
         elif isinstance(file.tags, mutagen.id3.ID3Tags):
@@ -199,38 +221,40 @@ class Tags(dict):
             # this lambda is useful because some tags can have 2 different field names, it reads both values and then join the two lists of tags obtained
 
             for key in tags_conversion[formt]:
-                self[key] = get_tags(key)
+                tags[key] = get_tags(key)
 
             # TODO handle tags formatting for some tags
 
             # discnumber / disctotal
-            discnumber_tag_value = self["discnumber"][0].text[0]
+            discnumber_tag_value = tags["discnumber"][0].text[0]
             discnumber_regex_result = Tags.RE_ID3_NUMBER_TOTAL.match(discnumber_tag_value)
 
             if discnumber_regex_result:
-                self["discnumber"] = [discnumber_regex_result.group("number")]
-                self["totaldiscs"] = [discnumber_regex_result.group("total")]
+                tags["discnumber"] = [discnumber_regex_result.group("number")]
+                tags["totaldiscs"] = [discnumber_regex_result.group("total")]
             else:
                 # TODO add log message
-                self.pop("discnumber")
+                tags.pop("discnumber")
 
             # tracknumber / tracktotal
-            track_number_tag_value = self["tracknumber"][0].text[0]
+            track_number_tag_value = tags["tracknumber"][0].text[0]
             track_number_regex_result = Tags.RE_ID3_NUMBER_TOTAL.match(track_number_tag_value)
 
             if track_number_regex_result:
-                self["tracknumber"] = [track_number_regex_result.group("number")]
-                self["totaltracks"] = [track_number_regex_result.group("total")]
+                tags["tracknumber"] = [track_number_regex_result.group("number")]
+                tags["totaltracks"] = [track_number_regex_result.group("total")]
             else:
                 # TODO add log message
-                self.pop("tracknumber")
+                tags.pop("tracknumber")
 
             for key in tags_conversion[formt]:
-                self[key] = list(map(str, self[key]))
+                tags[key] = list(map(str, tags[key]))
 
         else:
             # TODO add MP4
             raise NotImplementedError("Not implemented format: {}".format(file.filename))
+
+        return tags
 
     def to_xml(self) -> str:
         """Serializes the tags to a xml formatted string
