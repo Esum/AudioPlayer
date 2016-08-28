@@ -10,14 +10,16 @@ class PlayAudio:
         channel: The channel used by the system of the interface.
         sound: The current playing sound of the channel.
         repeat (False): Repeat the current playing sound.
+        volume (1.0): A floating point number between 0 and 1 representing the volume.
 
     """
 
-    def __init__(self, repeat=False, flags=Mode.loop_normal|Mode.ignoretags):
+    def __init__(self, volume=1.0, repeat=False, flags=Mode.loop_normal|Mode.ignoretags):
         self.flags = flags
         self.system = System(1, self.flags)
         self.channel = Channel()
         self.sound = None
+        self.set_volume(volume)
         self.set_repeat(repeat)
     
     def play_sound(self, path: str):
@@ -36,6 +38,7 @@ class PlayAudio:
             self.sound = self.sound.get_subsound(0)
         self.set_repeat(self.repeat)
         self.system.play_sound(self.sound, channel=self.channel)
+        self.channel.set_volume(self.volume)
     
     def get_position(self, time_unit: TimeUnit=TimeUnit.ms):
         """
@@ -76,6 +79,7 @@ class PlayAudio:
             self.sound.set_loop_count(-1 if repeat else 0)
     
     def set_volume(self, volume: float=1.0):
+        self.volume = volume
         self.channel.set_volume(volume)
         
     def stop(self):
