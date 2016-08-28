@@ -177,10 +177,6 @@ class Info(dict):
         return info
 
     @staticmethod
-    def from_xml(xml: str):
-        return Info.from_root_tree(ET.fromstring(xml))
-
-    @staticmethod
     def from_root_tree(root: ET.Element):
         info = Info()
         keys = {"codec", "bitrate", "channels", "sample_rate", "bits_per_sample", "length", "bitrate_mode"}
@@ -303,10 +299,6 @@ class Tags(dict):
             raise NotImplementedError("Not implemented format: {}".format(file.filename))
 
         return tags
-
-    @staticmethod
-    def from_xml(xml: str):
-        return Tags.from_root_tree(ET.fromstring(xml))
 
     @staticmethod
     def from_root_tree(root: ET.Element):
