@@ -203,6 +203,15 @@ class Tags(dict):
 
     @staticmethod
     def from_mutagen_file(file: mutagen.FileType):
+        """Load tags from the file
+
+        Args:
+            file: mutagen.FileType
+
+        Returns:
+            Tags
+
+        """
         tags = Tags()
 
         # FLAC
