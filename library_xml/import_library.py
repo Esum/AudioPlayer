@@ -451,6 +451,18 @@ class Library(list):
         self.refresh_tracked_files()
         self.import_untracked_files()
 
+    @staticmethod
+    def from_root_tree(root: ET.Element):
+        path = root.attrib["path"]
+        library = Library(path)
+        for track in root:
+            library.append(Track.from_root_tree(track))
+        return library
+
+    @staticmethod
+    def from_xml(xml_text: str):
+        return Library.from_root_tree(ET.fromstring(xml_text))
+
     def to_root_tree(self) -> ET.Element:
         root = ET.Element("library")
         root.attrib["path"] = xml.sax.saxutils.escape(self.path)
