@@ -5,7 +5,7 @@ class PlayAudio:
     """High level audio interface for fmod
     
     Attributes:
-        flags (Mode.loop_normal | Mode.ignoretags): The flags for the system and sounds initializations.
+        flags (Mode.loop_normal|Mode.ignoretags): The flags for the system and sounds initializations.
         system: The system used by the interface.
         channel: The channel used by the system of the interface.
         sound: The current playing sound of the channel.
@@ -13,7 +13,7 @@ class PlayAudio:
 
     """
 
-    def __init__(self, repeat=False, flags=Mode.loop_normal | Mode.ignoretags):
+    def __init__(self, repeat=False, flags=Mode.loop_normal|Mode.ignoretags):
         self.flags = flags
         self.system = System(1, self.flags)
         self.channel = Channel()
@@ -21,6 +21,12 @@ class PlayAudio:
         self.set_repeat(repeat)
     
     def play_sound(self, path: str):
+        """Plays an audio file.
+
+        Args:
+            path: The path of the audio file to play.
+        
+        """
         if self.sound is not None:
             # we free the last playing sound memory
             self.sound.release()
