@@ -158,6 +158,12 @@ class Sound:
     """
 
     def __init__(self, sound=None):
+        """Initializes a Sound object
+
+        Args:
+            sound (c_voidp, optional): A C pointer to the sound, None means the sound is given a new pointer.
+        
+        """
         if sound is None:
             sound = c_voidp()
         self._sound = sound
@@ -216,6 +222,12 @@ class Channel:
     """
 
     def __init__(self, channel=None):
+        """Initializes a Channel object
+
+        Args:
+            channel (c_voidp, optional): A C pointer to the channel, None means the channel is given a new pointer.
+        
+        """
         if channel is None:
             channel = c_voidp()
         self._channel = channel
