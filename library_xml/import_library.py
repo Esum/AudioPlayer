@@ -5,15 +5,12 @@ import time
 import re
 
 import xml.sax.saxutils
-import xml.dom.minidom
 import xml.etree.ElementTree as ET
 
 import mutagen
 import mutagen.mp3
 import mutagen.id3
 import mutagen.flac
-
-import jinja2
 
 from library_xml.constants import tags_conversion, tags_names
 
@@ -28,8 +25,6 @@ class Track:
         tags (Tags): tags of the file (album, artist, title, etc)
 
     """
-    with open(os.path.join(os.path.dirname(__file__), "./templates/track.xml")) as file:
-        XML_TEMPLATE = jinja2.Template(file.read())
 
     def __init__(self, path, last_modification, info, tags):
         self.path = path
@@ -84,6 +79,16 @@ class Track:
         else:
             return False
 
+    def to_root_tree(self) -> ET.Element:
+        root = ET.Element("track")
+        root.attrib["path"] = xml.sax.saxutils.escape(self.path)
+        root.attrib["last_modification"] = xml.sax.saxutils.escape(str(self.last_modification))
+
+        root.append(self.info.to_root_tree())
+        root.append(self.tags.to_root_tree())
+
+        return root
+
     def to_xml(self) -> str:
         """Serializes the informations to a xml formatted string
 
@@ -111,9 +116,7 @@ class Track:
             str: xml formatted string
 
         """
-        path = xml.sax.saxutils.escape(self.path)
-        last_modification = xml.sax.saxutils.escape(str(self.last_modification))
-        return Track.XML_TEMPLATE.render(path=path, last_modification=last_modification, tags_xml=self.tags.to_xml(), info_xml=self.info.to_xml())
+        return ET.tostring(self.to_root_tree(), encoding="utf-8").decode("utf-8")
 
 
 class Info(dict):
@@ -360,9 +363,6 @@ class Library(list):
 
     """
 
-    with open(os.path.join(os.path.dirname(__file__), "./templates/library.xml")) as file:
-        XML_TEMPLATE = jinja2.Template(file.read())
-
     def __init__(self, path):
         """Initializes the library and imports all the music files located in path and its subfolders
 
@@ -418,8 +418,9 @@ class Library(list):
         for path in all_paths.difference(tracked_paths):
             try:
                 # TODO add log message
-                self.append(Track(path))
-            except:
+                self.append(Track.from_path(path))
+            except Exception as e:
+                print(path, e)
                 # TODO add log message
                 pass
 
@@ -439,6 +440,16 @@ class Library(list):
         self.clean_deleted_files()
         self.refresh_tracked_files()
         self.import_untracked_files()
+
+    def to_root_tree(self) -> ET.Element:
+        root = ET.Element("library")
+        root.attrib["path"] = xml.sax.saxutils.escape(self.path)
+        root.attrib["export_time"] = xml.sax.saxutils.escape(str(time.time()))
+
+        for track in self:
+            root.append(track.to_root_tree())
+
+        return root
 
     def to_xml(self) -> str:
         """Serializes the library to a xml formatted string
@@ -470,13 +481,6 @@ class Library(list):
             str: xml containing all the library information
 
         """
-        tracks_XML = list()
+        return ET.tostring(self.to_root_tree(), encoding="utf-8").decode("utf-8")
 
-        for track in self:
-            tracks_XML.append(track.to_xml())
 
-        path = xml.sax.saxutils.escape(self.path)
-        export_time = xml.sax.saxutils.escape(repr(time.time()))
-
-        rendered = Library.XML_TEMPLATE.render(path=path, export_time=export_time, tracks=tracks_XML)
-        return xml.dom.minidom.parseString(rendered).toprettyxml()
