@@ -79,6 +79,14 @@ class Track:
         else:
             return False
 
+    @staticmethod
+    def from_root_tree(root: ET.Element):
+        path = root.attrib["path"]
+        last_modification = root.attrib["last_modification"]
+        info = Info.from_root_tree(root.find("info"))
+        tags = Tags.from_root_tree(root.find("tags"))
+        return Track(path, last_modification, info, tags)
+
     def to_root_tree(self) -> ET.Element:
         root = ET.Element("track")
         root.attrib["path"] = xml.sax.saxutils.escape(self.path)
