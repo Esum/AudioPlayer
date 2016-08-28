@@ -55,7 +55,7 @@ class Track:
 
         return Track(path, last_modification, info, tags)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return 'Track("{}")'.format(self.path)
 
     def has_file_changed(self) -> bool:
