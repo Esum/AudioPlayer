@@ -425,7 +425,7 @@ class Library(list):
         tracked_paths = {track.path for track in self}
         all_paths = {os.path.abspath(os.path.join(root, name)) for root, dirs, files in os.walk(self.path) for name in files}
 
-        for path in all_paths.difference(tracked_paths):
+        for path in sorted(all_paths.difference(tracked_paths)):
             try:
                 # TODO add log message
                 self.append(Track.from_path(path))
