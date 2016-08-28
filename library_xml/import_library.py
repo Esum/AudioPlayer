@@ -504,5 +504,3 @@ class Library(list):
 
         """
         return ET.tostring(self.to_root_tree(), encoding="utf-8").decode("utf-8")
-
-
