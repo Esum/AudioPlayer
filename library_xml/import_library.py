@@ -67,13 +67,21 @@ class Track:
         """
         return os.path.getmtime(self.path) != self.last_modification
 
-    def refresh(self) -> None:
-        """Checks the file has been modified since import and re-import it if it has"""
+    def refresh(self) -> bool:
+        """Checks the file has been modified since import and re-import it if it has
+
+        Returns:
+            bool, file refreshed ?
+
+        """
         if self.has_file_changed():
             file = mutagen.File(self.path)
             self.last_modification = os.path.getmtime(self.path)
             self.info = Info.from_mutagen_file(file)
             self.tags = Tags.from_mutagen_file(file)
+            return True
+        else:
+            return False
 
     def to_xml(self) -> str:
         """Serializes the informations to a xml formatted string
